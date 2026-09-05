@@ -4,10 +4,12 @@
 # external requirements
 flake8
 cookiecutter
-dvc 
+dvc
 numpy
-pandas 
-scikit-learn 
+pandas
+scikit-learn
 mlflow
 joblib
-flask 
+flask
+dagshub
+gunicorn

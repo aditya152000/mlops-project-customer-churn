@@ -18,7 +18,7 @@ mlflow_config:
   experiment_name: model_iteration1
   run_name: random_forest
   registered_model_name: random_forest_model
-  remote_server_uri: https://dagshub.com/rohmats/mlops-project-customer-churn.mlflow
+  remote_server_uri: https://dagshub.com/adityakmr152000/mlops-project-customer-churn.mlflow
  
 random_forest: 
   max_depth: 15

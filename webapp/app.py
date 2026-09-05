@@ -1,9 +1,9 @@
-import os
 import pandas as pd
 import mlflow
 import dagshub
 
 from flask import Flask, render_template, request
+
 
 # ============================================================
 # DagsHub / MLflow Configuration
@@ -12,24 +12,33 @@ from flask import Flask, render_template, request
 DAGSHUB_USERNAME = "adityakmr152000"
 DAGSHUB_REPO = "mlops-project-customer-churn"
 
-# Initialize DagsHub MLflow
-dagshub.init(
-    repo_owner=DAGSHUB_USERNAME,
-    repo_name=DAGSHUB_REPO,
-    mlflow=True
-)
-
-# MLflow tracking URI
 MLFLOW_TRACKING_URI = (
     "https://dagshub.com/"
     "adityakmr152000/"
     "mlops-project-customer-churn.mlflow"
 )
 
-mlflow.set_tracking_uri(MLFLOW_TRACKING_URI)
 
 # ============================================================
-# Load Production Model
+# Initialize DagsHub
+# ============================================================
+
+dagshub.init(
+    repo_owner=DAGSHUB_USERNAME,
+    repo_name=DAGSHUB_REPO,
+    mlflow=True
+)
+
+
+# ============================================================
+# Configure MLflow
+# ============================================================
+
+mlflow.set_tracking_uri(MLFLOW_TRACKING_URI)
+
+
+# ============================================================
+# Load Champion Model
 # ============================================================
 
 MODEL_NAME = "random_forest_model"
@@ -37,10 +46,14 @@ MODEL_ALIAS = "champion"
 
 MODEL_URI = f"models:/{MODEL_NAME}@{MODEL_ALIAS}"
 
+print("==============================================")
 print("Loading production model...")
-print(f"Model URI: {MODEL_URI}")
+print("Model URI:", MODEL_URI)
+print("==============================================")
+
 
 model = mlflow.pyfunc.load_model(MODEL_URI)
+
 
 print("Production model loaded successfully.")
 
@@ -64,8 +77,9 @@ def home():
     if request.method == "POST":
 
         try:
+
             # ------------------------------------------------
-            # Read input values from HTML form
+            # Get values from HTML form
             # ------------------------------------------------
 
             number_vmail_messages = float(
@@ -92,8 +106,9 @@ def home():
                 request.form["number_customer_service_calls"]
             )
 
+
             # ------------------------------------------------
-            # Create DataFrame
+            # Create input DataFrame
             # ------------------------------------------------
 
             input_data = pd.DataFrame(
@@ -115,8 +130,12 @@ def home():
                 ]
             )
 
-            print("\nInput received:")
+
+            print("\n==============================================")
+            print("INPUT DATA")
+            print("==============================================")
             print(input_data)
+
 
             # ------------------------------------------------
             # Make prediction
@@ -124,24 +143,33 @@ def home():
 
             prediction = model.predict(input_data)
 
-            print("Raw prediction:", prediction)
+            print("\nRaw prediction:", prediction)
+
 
             # ------------------------------------------------
-            # Convert prediction to readable output
+            # Convert prediction to readable result
             # ------------------------------------------------
 
             prediction_value = prediction[0]
 
-            if prediction_value == 1:
+            if prediction[0] == "yes":
+
                 response = "Customer is likely to CHURN"
+
             else:
+
                 response = "Customer is NOT likely to CHURN"
+
+
+            print("Prediction:", response)
+
 
         except Exception as e:
 
             response = f"Prediction error: {str(e)}"
 
-            print("ERROR:", e)
+            print("\nERROR:", e)
+
 
     return render_template(
         "index.html",
@@ -150,7 +178,7 @@ def home():
 
 
 # ============================================================
-# Health Check
+# Health Check Endpoint
 # ============================================================
 
 @app.route("/health", methods=["GET"])
